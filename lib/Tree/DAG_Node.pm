@@ -1605,22 +1605,6 @@ sub tree_to_graph_pm {
 
 # -----------------------------------------------
 
-sub tree_to_graphviz {
-  eval "require Graph::Writer::GraphViz" or die $@;
-  eval "use IO::All" or die $@;
-  my $self = shift;
-  my %args = ref($_[0]) ? %{shift()} : @_;
-  $args{'-format'} ||= 'dot';
-  my $graph = $self->tree_to_graph_pm();
-  my $writer = Graph::Writer::GraphViz->new(%args);
-  my $fh = io('$')->tie();
-  $writer->write_graph($graph, $fh);
-  my $rv = $fh->slurp();
-  return $rv;
-}
-
-# -----------------------------------------------
-
 sub tree2string
 {
 	my($self, $options, $tree) = @_;

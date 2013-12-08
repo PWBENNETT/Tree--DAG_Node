@@ -1541,6 +1541,86 @@ sub tree_to_lol_notation {
 
 # -----------------------------------------------
 
+sub tree_to_graph_pm {
+
+  eval "require Graph" or die $@;
+
+  my ($it, $o) = splice @_, 0, 1;
+  $o = {} unless ref $o;
+  $o->{'_depth'} ||= 0;
+
+  my %sensible_defaults = (
+    refvertexed => 1,
+    countedged => 0,
+    countvertexed => 0,
+    directed => 1,
+  ); # TODO come up with a longer list of sensible defaults
+  my %graph_args = ref($_[0]) ? %{shift()} : @_;
+  %graph_args = (%sensible_defaults, %graph_args);
+
+  my $rv = Graph::Directed->new(%graph_args);
+
+  $o->{'callback'} = sub {
+
+    my ($this, $o) = @_;
+
+    my $name = defined $this->name ? &Tree::DAG_Node::_dump_quote($this->name) : $this;
+    $rv->add_node($name);
+
+    my $attr = $this->attributes || { };
+    while (my ($k, $v) = each %$attr) {
+      $rv->set_vertex_attribute($name, $k => $v);
+    }
+
+    if (my $mother = $this->mother) {
+
+      my $mother_name = defined $mother->name ? &Tree::DAG_Node::_dump_quote($mother->name) : $mother;
+      $rv->add_edge($mother_name, $name);
+      $rv->set_edge_attribute($mother_name, $name, daughter => 1);
+
+    }
+
+    if (my $sister = $this->right_sister) {
+
+      my $sister_name = defined $sister->name ? &Tree::DAG_Node::_dump_quote($sister->name) : $sister;
+      $rv->add_edge($name, $sister_name);
+      $rv->set_edge_attribute($name, $sister_name, sister => 1);
+
+    } elsif (my $sister = $this->left_sister) {
+
+      my $sister_name = defined $sister->name ? &Tree::DAG_Node::_dump_quote($sister->name) : $sister;
+      $rv->add_edge($sister_name, $name);
+      $rv->set_edge_attribute($sister_name, $name, sister => 1);
+
+    }
+
+    return 1;
+
+  };
+
+  $it->walk_down($o);
+
+  return $rv;
+}
+
+# -----------------------------------------------
+
+sub tree_to_graphviz {
+  eval "require Graph::Writer::GraphViz" or die $@;
+  eval "use IO::All" or die $@;
+  my $self = shift;
+  my %args = ref($_[0]) ? %{shift()} : @_;
+  $args{'-format'} ||= 'dot';
+  my $graph = $self->tree_to_graph_pm();
+  my $writer = Graph::Writer::GraphViz->new(%args);
+  my $fh = io('$')->tie();
+  $writer->write_graph($graph, $fh);
+  my $rv = $fh->slurp();
+  return $rv;
+}
+
+# -----------------------------------------------
+
 sub tree2string
 {
 	my($self, $options, $tree) = @_;

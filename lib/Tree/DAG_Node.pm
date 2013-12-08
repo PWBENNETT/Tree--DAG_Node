@@ -1545,7 +1545,7 @@ sub tree_to_graph_pm {
 
   eval "require Graph" or die $@;
 
-  my ($it, $o) = splice @_, 0, 1;
+  my ($it, $o) = splice @_, 0, 2;
   $o = {} unless ref $o;
   $o->{'_depth'} ||= 0;
 

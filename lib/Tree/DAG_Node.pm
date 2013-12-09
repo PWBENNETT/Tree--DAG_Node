@@ -3022,6 +3022,64 @@ same options.
 
 Note: Names are converted to a printable form using the undocumented function _dump_quote().
 
+=head2 tree_to_graph_pm($options, [$graph_options])
+
+=head2 tree_to_graph_pm($options, [%graph_options])
+
+Returns one of the many possible representations of the tree as a C<Graph>
+object. This convenience method may be useful for interoperability (e.g. as a
+transport format en route to some other existing module that can render graphs
+visually, or analyze them in some way).
+
+The specific representation is designed to convey the bare minimum information
+to preserve the structure of the graph (notably, the ordering of daughter
+nodes, which is not an intrinsic feature of C<Graph>).
+
+Within the generated C<Graph>, nodes retain their names (if unnamed, a name
+will be generated), along with thier attributes, and all edges retain both the
+mother / daughter and left / right distinctions, which are stored in edge
+attributes in the output data; an edge will either have the "mother" attribute
+set to a true value, in which case the edge points from the mother to the
+daughter, B<XOR> the "sister" attribute set to a true value, in which case the
+edge points from the left sister to the right sister.
+
+Due to the different design intents of this module and C<Graph>, it is not
+currently possible to guarantee predictable results performing the inverse of
+this translation (e.g. C<Graph> objects may be undirected, and/or cyclic, among
+other things). Therefore the inverse translation is not currently implemented.
+
+The C<$options> hashref is as discussed above. The C<graph_options> argument
+may be provided as either a plain hash of options for Graph->new(), or as a
+hashref, in which case it will be dereferenced before being passed through.
+
+For the possible C<Graph> options, and their meanings, please see the
+documentation for that module.
+
+Some minimal and hopefully useful defaults are provided, which bear discussion:
+
+=over 4
+
+=item countedged => 0
+
+=item countvertexed => 0
+
+In a directed acyclic graph, it is not possible for a node or edge to be "in
+two places at once". These settings help to mitigate potential errors in
+translation.
+
+=item directed => 1
+
+A directed acyclic graph is by definition directed, thus this option is default
+for the same self-correcting reasons as C<countedged> and C<countvertexed>.
+
+=item refvertexed => 1
+
+The C<Graph> module requires that all nodes have a name. This module does not.
+The C<refvertexed> option tells C<Graph> to (in short) provide unnamed nodes
+with an automatic name.
+
+=back
+
 =head2 tree2string([$options], [$some_tree])
 
 Here, the [] represent optional parameters.

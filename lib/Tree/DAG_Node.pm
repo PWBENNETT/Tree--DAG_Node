@@ -3036,12 +3036,22 @@ to preserve the structure of the graph (notably, the ordering of daughter
 nodes, which is not an intrinsic feature of C<Graph>).
 
 Within the generated C<Graph>, nodes retain their names (if unnamed, a name
-will be generated), along with thier attributes, and all edges retain both the
+will be generated), along with their attributes, and all edges retain both the
 mother / daughter and left / right distinctions, which are stored in edge
-attributes in the output data; an edge will either have the "mother" attribute
-set to a true value, in which case the edge points from the mother to the
-daughter, B<XOR> the "sister" attribute set to a true value, in which case the
-edge points from the left sister to the right sister.
+attributes in the output object -- an edge will have exactly one of the two
+following attributes set to a true value:
+
+=over 4
+
+=item "mother"
+
+If true, this edge points from the mother to the daughter.
+
+=item "sister"
+
+If true, this edge points from the left sister to the right sister.
+
+=back
 
 Due to the different design intents of this module and C<Graph>, it is not
 currently possible to guarantee predictable results performing the inverse of
